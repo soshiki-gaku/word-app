@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>単語暗記アプリ</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1976d2">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f4f8;
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        #word-card {
+            background: white;
+            width: 300px;
+            margin: 20px auto;
+            padding: 40px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(26, 12, 12, 0.5);
+        }
+
+        #word {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #meaning {
+            font-size: 24px;
+            color: #2e7d32;
+        }
+
+        button {
+            font-size: 16px;
+            padding: 10px 24px;
+            margin: 0 6px;
+            border: none;
+            border-radius: 8px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>単語暗記アプリ</h1>
+    <div id="word-card">
+        <p id="word">apple</p>
+    </div>
+    <button id="show-button">意味を見る</button>
+    <button id="next-button">次へ</button>
+    <p id="meaning" style="display: none;">りんご</p>
+    <script>
+        const words = [
+  { word: 'apple', meaning: 'りんご' },
+  { word: 'dog', meaning: '犬' },
+  { word: 'book', meaning: '本' },
+]
+     const word = document.getElementById('word')
+    const meaning = document.getElementById('meaning')
+        const showButton = document.getElementById('show-button')
+    const nextButton = document.getElementById('next-button')
+    let currentIndex = 0
+
+    function showCurrentWord() {
+      word.textContent = words[currentIndex].word
+      meaning.textContent = words[currentIndex].meaning
+      meaning.style.display = 'none'
+    }
+
+    showButton.addEventListener('click', () => {
+      meaning.style.display = 'block'
+    })
+
+    nextButton.addEventListener('click', () => {
+      currentIndex = currentIndex + 1
+      if (currentIndex >= words.length) {
+        currentIndex = 0
+      }
+      showCurrentWord()
+    })
+
+    showCurrentWord()
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+    }
+  </script>
+</body>
+</html>
