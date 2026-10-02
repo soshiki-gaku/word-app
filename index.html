@@ -45,24 +45,61 @@
             color: white;
             cursor: pointer;
         }
+        #group-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #group-tabs .tab {
+            font-size: 18px;
+            padding: 14px 20px;
+            margin: 0;
+            background: #dfe7ef;
+            color: #333;
+            border-radius: 12px 12px 0 0;
+        }
+
+        #group-tabs .tab.selected {
+            background: #1976d2;
+            color: white;
+        }
+
+        #known-button {
+            background: #2e7d32;
+        }
+
+        #unknown-button {
+            background: #e65100;
+        }
     </style>
 </head>
 <body>
     <h1>単語暗記アプリ</h1>
-    <select id="group-select"></select>
+    <div id="group-tabs"></div>
+    <p id="count">覚えた 0 / 0</p>
     <div id="word-card">
         <p id="word">apple</p>
     </div>
     <button id="show-button">意味を見る</button>
-    <button id="next-button">次へ</button>
+    <div id="answer-buttons" style="display: none;">
+    <button id="known-button">覚えた</button>
+    <button id="unknown-button">まだ</button>
+</div>
     <p id="meaning" style="display: none;">りんご</p>
     <script src="words.js"></script>
     <script>
      const word = document.getElementById('word')
     const meaning = document.getElementById('meaning')
         const showButton = document.getElementById('show-button')
-    const nextButton = document.getElementById('next-button')
-    const groupSelect = document.getElementById('group-select')
+    const groupTabs = document.getElementById('group-tabs')
+    const countText = document.getElementById('count')
+    const answerButtons = document.getElementById('answer-buttons')
+    const knownButton = document.getElementById('known-button')
+    const unknownButton = document.getElementById('unknown-button')
 
     const groups = []
     for (const w of words) {
@@ -71,42 +108,88 @@
       }
     }
 
-    groupSelect.add(new Option('すべて', 'all'))
-    for (const g of groups) {
-      groupSelect.add(new Option(g, g))
-    }
-     let currentWords = words
+    let currentWords = words
+    let knownWords = new Set(JSON.parse(localStorage.getItem('knownWords') || '[]'))
 
-    groupSelect.addEventListener('change', () => {
-      if (groupSelect.value === 'all') {
+    function keyOf(w) {
+      return w.group + '|' + w.word
+    }
+
+    function saveKnownWords() {
+      localStorage.setItem('knownWords', JSON.stringify([...knownWords]))
+    }
+    function updateCount() {
+     const knownCount = currentWords.filter((w) => knownWords.has(keyOf(w))).length
+      countText.textContent = '覚えた ' + knownCount + ' / ' + currentWords.length 
+    }
+
+    function selectGroup(group, tab) {
+      if (group === 'all') {
         currentWords = words
       } else {
-        currentWords = words.filter((w) => w.group === groupSelect.value)
+        currentWords = words.filter((w) => w.group === group)
       }
       currentIndex = 0
+      for (const t of groupTabs.children) {
+        t.classList.remove('selected')
+      }
+      tab.classList.add('selected')
+      updateCount()
       showCurrentWord()
-    })
+    }
+
+    function makeTab(name, group) {
+      const tab = document.createElement('button')
+      tab.textContent = name
+      tab.className = 'tab'
+      tab.addEventListener('click', () => selectGroup(group, tab))
+      groupTabs.appendChild(tab)
+      return tab
+    }
+
+    const allTab = makeTab('すべて', 'all')
+    for (const g of groups) {
+      makeTab(g, g)
+    }
     let currentIndex = 0
 
     function showCurrentWord() {
       word.textContent = currentWords[currentIndex].word
       meaning.textContent = currentWords[currentIndex].meaning
       meaning.style.display = 'none'
+      showButton.style.display = 'inline-block'
+      answerButtons.style.display = 'none'
     }
 
     showButton.addEventListener('click', () => {
       meaning.style.display = 'block'
+      showButton.style.display = 'none'
+      answerButtons.style.display = 'inline-block'
     })
-
-    nextButton.addEventListener('click', () => {
+    function goNext() {
       currentIndex = currentIndex + 1
       if (currentIndex >= currentWords.length) {
         currentIndex = 0
       }
-      showCurrentWord()
+       showCurrentWord()
+    }
+
+    knownButton.addEventListener('click', () => {
+     knownWords.add(keyOf(currentWords[currentIndex]))
+      saveKnownWords()
+      updateCount()
+      goNext()
     })
 
-    showCurrentWord()
+    unknownButton.addEventListener('click', () => {
+    knownWords.delete(keyOf(currentWords[currentIndex]))
+      saveKnownWords()
+      updateCount()
+      goNext()
+    })
+    
+
+    　selectGroup('all', allTab)
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')

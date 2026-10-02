@@ -1,4 +1,4 @@
-const CACHE_NAME = 'word-app-v7'
+const CACHE_NAME = 'word-app-v８'
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './words.js']
 self.addEventListener('install', (event) => {
     self.skipWaiting()
