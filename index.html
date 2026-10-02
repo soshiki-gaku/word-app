@@ -47,13 +47,11 @@
         }
         #group-tabs {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
             gap: 8px;
             max-width: 600px;
             margin: 0 auto;
+            overflow-x: auto;
         }
-
         #group-tabs .tab {
             font-size: 18px;
             padding: 14px 20px;
@@ -61,11 +59,19 @@
             background: #dfe7ef;
             color: #333;
             border-radius: 12px 12px 0 0;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         #group-tabs .tab.selected {
             background: #1976d2;
             color: white;
+        }
+
+        #group-tabs .tab:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
         }
 
         #known-button {
