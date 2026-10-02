@@ -1,8 +1,9 @@
-const CACHE_NAME = 'word-app-v6'
+const CACHE_NAME = 'word-app-v7'
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './words.js']
 self.addEventListener('install', (event) => {
+    self.skipWaiting()
     event.waitUntil(caches.open(CACHE_NAME).then((cache) =>
-    cache.addAll(FILES)))
+    cache.addAll(FILES.map((file) => new Request(file, { cache: 'reload' })))))
 })
 self.addEventListener('activate', (event) => {
     event.waitUntil(
@@ -11,6 +12,7 @@ self.addEventListener('activate', (event) => {
                 .map((name) => caches.delete(name))
         ))
     )
+     self.clients.claim()
 })
 
 self.addEventListener('fetch', (event) => {
