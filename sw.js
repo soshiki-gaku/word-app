@@ -1,5 +1,5 @@
-const CACHE_NAME = 'word-app-v10'
-const FILES = ['./', './index.html', './manifest.json', './tetsuheki-icon.png', './icon-512.png', './words.js']
+const CACHE_NAME = 'word-app-v11'
+const FILES = ['./', './index.html', './manifest.json', './tetsuheki-icon-192.png', './tetsuheki-icon-512.png', './words.js']
 self.addEventListener('install', (event) => {
     self.skipWaiting()
     event.waitUntil(caches.open(CACHE_NAME).then((cache) =>
