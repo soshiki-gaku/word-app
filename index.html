@@ -49,6 +49,7 @@
 </head>
 <body>
     <h1>単語暗記アプリ</h1>
+    <select id="group-select"></select>
     <div id="word-card">
         <p id="word">apple</p>
     </div>
@@ -61,11 +62,35 @@
     const meaning = document.getElementById('meaning')
         const showButton = document.getElementById('show-button')
     const nextButton = document.getElementById('next-button')
+    const groupSelect = document.getElementById('group-select')
+
+    const groups = []
+    for (const w of words) {
+      if (!groups.includes(w.group)) {
+        groups.push(w.group)
+      }
+    }
+
+    groupSelect.add(new Option('すべて', 'all'))
+    for (const g of groups) {
+      groupSelect.add(new Option(g, g))
+    }
+     let currentWords = words
+
+    groupSelect.addEventListener('change', () => {
+      if (groupSelect.value === 'all') {
+        currentWords = words
+      } else {
+        currentWords = words.filter((w) => w.group === groupSelect.value)
+      }
+      currentIndex = 0
+      showCurrentWord()
+    })
     let currentIndex = 0
 
     function showCurrentWord() {
-      word.textContent = words[currentIndex].word
-      meaning.textContent = words[currentIndex].meaning
+      word.textContent = currentWords[currentIndex].word
+      meaning.textContent = currentWords[currentIndex].meaning
       meaning.style.display = 'none'
     }
 
@@ -75,7 +100,7 @@
 
     nextButton.addEventListener('click', () => {
       currentIndex = currentIndex + 1
-      if (currentIndex >= words.length) {
+      if (currentIndex >= currentWords.length) {
         currentIndex = 0
       }
       showCurrentWord()
