@@ -81,12 +81,46 @@
         #unknown-button {
             background: #e65100;
         }
+        
+        #mode-buttons {
+            margin: 12px 0;
+        }
+
+        #mode-buttons button {
+            background: #dfe7ef;
+            color: #333;
+        }
+
+        #mode-buttons button.selected {
+            background: #1976d2;
+            color: white;
+        }
+
+        #study-table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: white;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        #study-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
     <h1>組織学単語帳「鉄壁」暗記アプリ</h1>
     <div id="group-tabs"></div>
+    <div id="mode-buttons">
+        <button id="test-mode-button">試験</button>
+        <button id="study-mode-button">学習</button>
+    </div>
     <p id="count">覚えた 0 / 0</p>
+    <div id="test-view">
+        <p id="progress">1 / 10 問目</p>
     <div id="word-card">
         <p id="word">apple</p>
     </div>
@@ -96,6 +130,15 @@
     <button id="unknown-button">まだ</button>
 </div>
     <p id="meaning" style="display: none;">りんご</p>
+    </div>
+    <div id="result-view" style="display: none;">
+        <p id="result-text"></p>
+        <button id="retry-button">もう1回</button>
+    </div>
+
+    <div id="study-view" style="display: none;">
+        <table id="study-table"></table>
+    </div>
     <script src="words.js"></script>
     <script>
      const word = document.getElementById('word')
@@ -106,6 +149,15 @@
     const answerButtons = document.getElementById('answer-buttons')
     const knownButton = document.getElementById('known-button')
     const unknownButton = document.getElementById('unknown-button')
+    const testModeButton = document.getElementById('test-mode-button')
+    const studyModeButton = document.getElementById('study-mode-button')
+    const testView = document.getElementById('test-view') 
+    const progressText = document.getElementById('progress')
+    const resultView = document.getElementById('result-view')
+    const resultText = document.getElementById('result-text')
+    const retryButton = document.getElementById('retry-button')
+    const studyView = document.getElementById('study-view')
+    const studyTable = document.getElementById('study-table')
 
     const groups = []
     for (const w of words) {
@@ -141,7 +193,7 @@
       }
       tab.classList.add('selected')
       updateCount()
-      showCurrentWord()
+      showMode()
     }
 
     function makeTab(name, group) {
@@ -158,10 +210,41 @@
       makeTab(g, g)
     }
     let currentIndex = 0
+let quizWords = []
+    let roundKnown = 0
+
+    function shuffle(list) {
+      const copy = [...list]
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        const tmp = copy[i]
+        copy[i] = copy[j]
+        copy[j] = tmp
+      }
+      return copy
+    }
+
+    function makeQuiz() {
+      const total = Math.min(10, currentWords.length)
+      const known = shuffle(currentWords.filter((w) => knownWords.has(keyOf(w))))
+      const unknown = shuffle(currentWords.filter((w) => !knownWords.has(keyOf(w))))
+      const knownCount = Math.round(total * known.length / currentWords.length)
+      const unknownCount = total - knownCount
+      return shuffle([...known.slice(0, knownCount), ...unknown.slice(0, unknownCount)])
+    }
+    function startQuiz() {
+      quizWords = makeQuiz()
+      currentIndex = 0
+      roundKnown = 0
+      testView.style.display = 'block'
+      resultView.style.display = 'none'
+      showCurrentWord()
+    }
 
     function showCurrentWord() {
-      word.textContent = currentWords[currentIndex].word
-      meaning.textContent = currentWords[currentIndex].meaning
+      word.textContent = quizWords[currentIndex].word
+      meaning.textContent = quizWords[currentIndex].meaning
+      progressText.textContent = (currentIndex + 1) + ' / ' + quizWords.length + ' 問目'
       meaning.style.display = 'none'
       showButton.style.display = 'inline-block'
       answerButtons.style.display = 'none'
@@ -172,28 +255,77 @@
       showButton.style.display = 'none'
       answerButtons.style.display = 'inline-block'
     })
+
     function goNext() {
       currentIndex = currentIndex + 1
-      if (currentIndex >= currentWords.length) {
-        currentIndex = 0
+      if (currentIndex >= quizWords.length) {
+        testView.style.display = 'none'
+        resultView.style.display = 'block'
+        resultText.textContent = quizWords.length + '問中 ' + roundKnown + '問 覚えた'
+        return
       }
-       showCurrentWord()
+      showCurrentWord()
     }
 
     knownButton.addEventListener('click', () => {
-     knownWords.add(keyOf(currentWords[currentIndex]))
+      knownWords.add(keyOf(quizWords[currentIndex]))
+      roundKnown = roundKnown + 1
       saveKnownWords()
       updateCount()
       goNext()
     })
 
     unknownButton.addEventListener('click', () => {
-    knownWords.delete(keyOf(currentWords[currentIndex]))
+      knownWords.delete(keyOf(quizWords[currentIndex]))
       saveKnownWords()
       updateCount()
       goNext()
     })
-    
+
+    retryButton.addEventListener('click', () => {
+      startQuiz()
+    })
+    let mode = 'test'
+
+    function renderStudy() {
+      studyTable.innerHTML = ''
+      for (const w of currentWords) {
+        const row = document.createElement('tr')
+        const wordCell = document.createElement('td')
+        const meaningCell = document.createElement('td')
+        wordCell.textContent = w.word
+        meaningCell.textContent = w.meaning
+        row.appendChild(wordCell)
+        row.appendChild(meaningCell)
+        studyTable.appendChild(row)
+      }
+    }
+
+    function showMode() {
+      if (mode === 'test') {
+        testModeButton.classList.add('selected')
+        studyModeButton.classList.remove('selected')
+        studyView.style.display = 'none'
+        startQuiz()
+      } else {
+        studyModeButton.classList.add('selected')
+        testModeButton.classList.remove('selected')
+        testView.style.display = 'none'
+        resultView.style.display = 'none'
+        studyView.style.display = 'block'
+        renderStudy()
+      }
+    }
+
+    testModeButton.addEventListener('click', () => {
+      mode = 'test'
+      showMode()
+    })
+
+    studyModeButton.addEventListener('click', () => {
+      mode = 'study'
+      showMode()
+    })
 
     　selectGroup('all', allTab)
 
