@@ -109,6 +109,20 @@
             border-bottom: 1px solid #ddd;
             text-align: left;
         }
+        #size-buttons button {
+            background: #dfe7ef;
+            color: #333;
+        }
+
+        #size-buttons button.selected {
+            background: #1976d2;
+            color: white;
+        }
+
+        #study-table input {
+            width: 22px;
+            height: 22px;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +134,10 @@
     </div>
     <p id="count">覚えた 0 / 0</p>
     <div id="test-view">
+        <div id="size-buttons">
+            <button id="ten-button" class="selected">10問</button>
+            <button id="all-button">全部</button>
+        </div>
         <p id="progress">1 / 10 問目</p>
     <div id="word-card">
         <p id="word">apple</p>
@@ -158,6 +176,8 @@
     const retryButton = document.getElementById('retry-button')
     const studyView = document.getElementById('study-view')
     const studyTable = document.getElementById('study-table')
+    const tenButton = document.getElementById('ten-button')
+    const allButton = document.getElementById('all-button')
 
     const groups = []
     for (const w of words) {
@@ -212,6 +232,7 @@
     let currentIndex = 0
 let quizWords = []
     let roundKnown = 0
+    let quizAll = false
 
     function shuffle(list) {
       const copy = [...list]
@@ -225,7 +246,10 @@ let quizWords = []
     }
 
     function makeQuiz() {
-      const total = Math.min(10, currentWords.length)
+      let total = Math.min(10, currentWords.length)
+      if (quizAll) {
+        total = currentWords.length
+      }
       const known = shuffle(currentWords.filter((w) => knownWords.has(keyOf(w))))
       const unknown = shuffle(currentWords.filter((w) => !knownWords.has(keyOf(w))))
       const knownCount = Math.round(total * known.length / currentWords.length)
@@ -291,10 +315,27 @@ let quizWords = []
       studyTable.innerHTML = ''
       for (const w of currentWords) {
         const row = document.createElement('tr')
+        const checkCell = document.createElement('td')
         const wordCell = document.createElement('td')
         const meaningCell = document.createElement('td')
+
+        const checkBox = document.createElement('input')
+        checkBox.type = 'checkbox'
+        checkBox.checked = knownWords.has(keyOf(w))
+        checkBox.addEventListener('change', () => {
+          if (checkBox.checked) {
+            knownWords.add(keyOf(w))
+          } else {
+            knownWords.delete(keyOf(w))
+          }
+          saveKnownWords()
+          updateCount()
+        })
+
+        checkCell.appendChild(checkBox)
         wordCell.textContent = w.word
         meaningCell.textContent = w.meaning
+        row.appendChild(checkCell)
         row.appendChild(wordCell)
         row.appendChild(meaningCell)
         studyTable.appendChild(row)
@@ -327,7 +368,20 @@ let quizWords = []
       showMode()
     })
 
-    　selectGroup('all', allTab)
+    tenButton.addEventListener('click', () => {
+      quizAll = false
+      tenButton.classList.add('selected')
+      allButton.classList.remove('selected')
+      startQuiz()
+    })
+
+    allButton.addEventListener('click', () => {
+      quizAll = true
+      allButton.classList.add('selected')
+      tenButton.classList.remove('selected')
+      startQuiz()
+    })
+    selectGroup('all', allTab)
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')

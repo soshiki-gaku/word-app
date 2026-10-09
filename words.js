@@ -42,7 +42,7 @@
 { group: '#1 上皮', word: '(非/)角化', meaning: '(un/)keratinized' },
 { group: '#1 上皮', word: '偽重層(多列)', meaning: 'pseudostratified' },
 { group: '#1 上皮', word: '移行', meaning: 'transitional' },
-{ group: '#1 上皮', word: '基底膜', meaning: 'basal membrane' },
+{ group: '#1 上皮', word: '基底膜', meaning: 'basement membrane' },
 { group: '#1 上皮', word: '繊毛細胞', meaning: 'ciliated cell' },
 { group: '#1 上皮', word: '基底細胞', meaning: 'basal cell' },
 { group: '#1 上皮', word: '杯細胞', meaning: 'goblet cell' },
