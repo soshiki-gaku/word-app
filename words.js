@@ -623,4 +623,5 @@
 { group: '#22 耳', word: '蝸牛神経', meaning: 'cochlear nerve' },
 { group: '#22 耳', word: 'らせん板縁', meaning: 'spiral limbus' },
 { group: '#22 耳', word: '骨らせん板', meaning: 'osseous spiral lamina' },
-{ group: '#22 耳', word: '鼓室階', meaning: 'scala tympani' },,]
+{ group: '#22 耳', word: '鼓室階', meaning: 'scala tympani' },
+]
